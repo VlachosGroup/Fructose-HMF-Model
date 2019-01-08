@@ -8,6 +8,11 @@ kinetic model by T. Dallas Swift et al. ACS Catal 2014, 4,259-267.
 ## Developers
 - Pierre Desir (pdesir@udel.edu)
 
+## Publications
+- Pierre Desir, Basudeb Saha, Dionisios G. Vlachos, “Ultrafast Flow Chemistry 
+  for the Acid-Catalyzed Conversion of Fructose”. In Review, 2018.
+- T. Dallas Swift et al. ACS Catal 2014, 4,259-267
+
 ## License
 This project is licensed under the MIT license - see the LICENSE.md file for 
 details.
