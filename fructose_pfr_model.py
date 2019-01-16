@@ -12,12 +12,10 @@
 #were taken from the kinetic model by T. Dallas Swift et al. ACS Catal 
 #2014, 4,259-267.
 '''
-import sys
-import os
-import numpy as np
-import pandas as pd
+import scipy.integrate as integrate
 import matplotlib.pyplot as plt
-import matplotlib
+import numpy as np
+from scipy.integrate import odeint
 
 #%%------------------------------------------------------------------------
 # INPUT PARAMETERS: n_T, pH, Tmin_degC, Tmax_degC, tmin, tmax, Fru0
@@ -30,23 +28,22 @@ tf = 1e3 #Final time point[min]
 Fru0 = 1 #Normalized initial fructose concentration (always equal to 1)
 #-------------------------------------------------------------------------
 #VARIABLE REACTION PARAMETERS
-C_Hplus = 10**(-pH) #H+ concentraction [mol/L]
-T_degC = np.linspace(Tmin_degC,Tmax_degC,n_T) #Rxn temperature [°C]
-T_K = T_degC + 273*np.ones(len(T_degC)) #Rxn temperature [K]
+
 #-------------------------------------------------------------------------
 #%%
-def PFR(C, t, T_K):
+def PFR(C, t, T, pH):
     '''
     #The "PFR" function describes the species conservative equation as a
-    #set of ODEs at T_K
+    #set of ODEs at T
     '''    
     #CONSTANTS
     R = 8.314 #Ideal gas law constant [J/mol-K]
     Tm = 381 #Mean temperature of all Rxn [K]
     
     #OTHER MODEL PARAMETERS
-    C_H2O = 47.522423477254065 + 0.06931572301966918*T_K 
-    - 0.00014440077466393135*T_K**2 #Water 
+    C_Hplus = 10**(-pH) #H+ concentraction [mol/L]
+    C_H2O = 47.522423477254065 + 0.06931572301966918*T
+    - 0.00014440077466393135*T**2 #Water 
     #concentration as a function of temperature from 25 °C to 300 °C
     #[mol/L]
        
@@ -67,10 +64,10 @@ def PFR(C, t, T_K):
     
     #Equilibirium constants b/t open-chain fructose and tautomers as a 
     #function of temperature
-    K_bp = K_bp303*np.exp(-(delH_bp/R)*(1/T_K-1/303))
-    K_bf = K_bf303*np.exp(-(delH_bf/R)*(1/T_K-1/303))
-    K_ap = K_ap303*np.exp(-(delH_ap/R)*(1/T_K-1/303))
-    K_af = K_af303*np.exp(-(delH_af/R)*(1/T_K-1/303))
+    K_bp = K_bp303*np.exp(-(delH_bp/R)*(1/T-1/303))
+    K_bf = K_bf303*np.exp(-(delH_bf/R)*(1/T-1/303))
+    K_ap = K_ap303*np.exp(-(delH_ap/R)*(1/T-1/303))
+    K_af = K_af303*np.exp(-(delH_af/R)*(1/T-1/303))
     
     #Furanose fraction at equilibirum as a function of temperature
     phi_f = (K_af + K_bf/(1 + K_af + K_bf + K_ap + K_bp))
@@ -85,14 +82,14 @@ def PFR(C, t, T_K):
     #TEMPERATURE
     k = np.zeros(5)
     for i in range(len(k)):
-        k[i] = np.exp(lnk381[i]-(Ea[i]/R)*(1/T_K-1/Tm)) #[min^-1.M^-1]
+        k[i] = np.exp(lnk381[i]-(Ea[i]/R)*(1/T-1/Tm)) #[min^-1.M^-1]
     
     #RXN RATES FOR THE RXN NETWORK OF FRUCTOSE DEHYDRATION
     #Note: C[0] = Normalized Fructose concentration; C[1] = Normalized
     #HMF concentration; C[2] = Normalized LA concentration; 
     #C[3] = Normalized FA concentration;
     Rxn = np.zeros(5) #[mol/L-min]
-    Rxn[0] = k[0]*phi_f[0]*C[0]*C_Hplus/C_H2O #[mol/L-min]
+    Rxn[0] = k[0]*phi_f*C[0]*C_Hplus/C_H2O #[mol/L-min]
     Rxn[1] = k[1]*C[0]*C_Hplus #[min^-1]
     Rxn[2] = k[2]*C[1]*C_Hplus #[min^-1]
     Rxn[3] = k[3]*C[1]*C_Hplus #[min^-1]
@@ -105,8 +102,47 @@ def PFR(C, t, T_K):
     rhs[1] = (Rxn[0]-Rxn[2]-Rxn[3]) #HMF
     rhs[2] = Rxn[2] #LA
     rhs[3] = (Rxn[2]+Rxn[4]) #FA
-  
-
-#def model(T):
     
-    # Solving for the PFR model at certain temperature
+    return rhs
+  
+#%% SOLVING FOR THE PFR MODEL at certain temperature T_K
+T_degC = 200
+T = T_degC + 273
+#Initial Condition 
+C0 = np.array([Fru0, 0, 0, 0])
+
+# Time step has to be defined explicitly?
+Tau = np.linspace(t0, tf, 101)
+
+# Solve the odes
+Conc = odeint(PFR, C0, Tau, args=(T, pH))
+
+#RESULTS
+Fru = np.around(Conc[:,0], decimals = 4) #Fructose normalized concentration 
+HMF = np.around(Conc[:,1], decimals = 4) #HMF normalized concentration 
+LA = np.around(Conc[:,2], decimals = 4) #Levulinic acid (LA) concentration 
+FA = np.around(Conc[:,3], decimals = 4) #Formic acid (FA) concentration 
+Conv = np.around(100*(1-Fru), decimals = 4) #Fructose conversion [%]
+HMF_Yield = 100*HMF #HMF yield [%]
+HMF_Select = 100*HMF_Yield/Conv #HMF selectivity [%]
+LA_Yield = 100*LA #LA yield [%]
+FA_Yield = 100*FA #FA yield [%]
+
+#%%    
+#OPTIMAL CONDITIONS FOR MAX HMF YIELD
+Max_HMF_Yield = max(HMF_Yield) #Maximum HMF Yield [%]
+index_range = np.where(HMF_Yield == Max_HMF_Yield)[0] # Index of matrix 
+#element where the HMF yield is at its max value
+index = index_range[max(np.where(Conv[index_range] == max(Conv[index_range]))[0])]
+#index of matrix element for optimal conditions for max HMF yield
+Tau_opt = Tau[index] #Optimal residence time to reach maximum HMF 
+#yield [min]
+Opt_Conv = np.around(Conv[index], decimals = 0) #Fructose conversion at max HMF yield [%]
+Opt_Select = HMF_Select[index] #HMF selectivity at max HMF yield [%]
+
+#REPORTING OPTIMAL CONDITIONS
+Opt_Cond = [T_degC, Tau_opt, Max_HMF_Yield, Opt_Conv, Opt_Select]
+#Temperature, optimal residence time, max HMF yield, conversion at max
+#HMF yield, HMF selectivity at max HMF yield
+
+plt.plot(Tau, HMF_Yield)
