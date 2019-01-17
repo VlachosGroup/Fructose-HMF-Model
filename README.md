@@ -5,8 +5,11 @@ conversion, yield, and selectivity of the species as a function of temperature,
 pH, and time. All the kinetic and thermodynamic parameters were taken from the 
 kinetic model by T. Dallas Swift et al. ACS Catal 2014, 4,259-267.
 
+The model is offered in both MATLAB and Python 3.6. 
+
 ## Developers
 - Pierre Desir (pdesir@udel.edu)
+- Yifan Wang (wangyf@udel.edu)
 
 ## Publications
 - Pierre Desir, Basudeb Saha, Dionisios G. Vlachos, “Ultrafast Flow Chemistry 

@@ -1,8 +1,12 @@
-function [Tau, Opt_Cond] = FRU_PFR_Model_function(T_degC, pH)
-% Inputs
+function [Opt_Cond] = FRU_PFR_Model_function(T_degC, pH, tf)
+% This code takes in 3 inputs
  
 % T - Rxn temperature [°C]
 % pH - Rxn pH 
+% tf - final residence time (min)
+% Example: FRU_PFR_Model_function(100, 0.7, 1000)
+
+
 %Code written by: Pierre Desir
 %Date: 06-13-16
  
@@ -20,7 +24,6 @@ function [Tau, Opt_Cond] = FRU_PFR_Model_function(T_degC, pH)
  Tmin_degC = 100; %Min rxn temperature [°C]
  Tmax_degC = 200; %Max rxn temperature [°C]
  t0 = 0; %Initial time point [min]
- tf = 1e3; %Final time point[min]
  Fru0 = 1; %Normalized initial fructose concentration (always equal to 1)
  %-------------------------------------------------------------------------
  %VARIABLE REACTION PARAMETERS
@@ -65,75 +68,7 @@ Opt_Cond = [T_degC Tau_opt Max_HMF_Yield Opt_Conv Opt_Select];
 %Temperature, optimal residence time, max HMF yield, conversion at max
 %HMF yield, HMF selectivity at max HMF yield
     
-   
-%     %PLOTTING THE RESULTS
-%     %FIG.1 : HMF selectivity vs. FRU conversion
-%     figure(1);
-%     fig1(i)= plot(Conv,HMF_Select,'DisplayName',...
-%         strcat(num2str(round(T_degC(i),2)),' ^oC'));
-%     xlabel('Fructose Conversion (%)');
-%     ylabel('HMF Selectity (%)');xlim([5 100]);
-%     title('HMF Selectivity');
-%     hold on
-%     
-%     %FIG.2 : FRU Conversion vs. residence time
-%     figure(2);
-%     fig2(i)= semilogx(Tau,Conv,'DisplayName',...
-%         strcat(num2str(round(T_degC(i),2)),' ^oC'));
-%     xlim([t0 tf]);
-%     xlabel('Residence Time (min)');
-%     ylabel('Fructose Conversion (%)');xlim([t0 tf]); 
-%     title('Fructose Conversion');
-%     hold on
-%     
-%     %FIG.3 : HMF yield vs. residence time
-%     figure(3);
-%     fig3(i)= semilogx(Tau,HMF_Yield,'DisplayName',...
-%         strcat(num2str(round(T_degC(i),2)),' ^oC')); 
-%     xlabel('Residence Time (min)');
-%     ylabel('HMF Yield (%)'); 
-%     xlim([t0 tf]);title('HMF Yield');
-%     hold on
-%     
-%     %FIG.4 : LA yield vs. residence time
-%     figure(4);
-%     fig4(i)= semilogx(Tau,LA_Yield,'DisplayName',...
-%         strcat(num2str(round(T_degC(i),2)),' ^oC')); 
-%     xlabel('Residence Time (min)');
-%     ylabel('LA Yield (%)'); 
-%     xlim([t0 tf]);title('LA Yield');
-%     hold on
-%     
-%     %FIG.5 : FA yield vs. residence time
-%     figure(5);
-%     fig5(i)= semilogx(Tau,FA_Yield,'DisplayName',...
-%         strcat(num2str(round(T_degC(i),2)),' ^oC')); 
-%     xlabel('Residence Time (min)');
-%     ylabel('FA Yield (%)'); 
-%     xlim([t0 tf]);title('FA Yield');
-%     hold on
  
-
-% 
-%  hold off
-%  
-%  %FIG.6 : Max HMF yield vs. temperature
-%  figure(6);
-%  fig6 = plot(T_degC,Max_HMF_Yield);    
-%  xlabel('Temperature (°C)');
-%  ylabel('Max HMF Yield (%)'); 
-%  title('Max HMF Yield');
-%  
-%  %FIG.7 : Optimal residence time vs. temperature
-%  figure(7);
-%  fig7 = semilogy(T_degC,Tau_opt);    
-%  xlabel('Temperature (°C)');
-%  ylabel('Optimal Residence Time (min)'); 
-%  title('Optimal Residence Time');
-%  
-%  
-%  %ADDING LEGENDS TO PLOTS
-%  legend(fig1);legend(fig2);legend(fig3);legend(fig4);legend(fig5);
 %  
 % toc
   
@@ -147,7 +82,7 @@ Opt_Cond = [T_degC Tau_opt Max_HMF_Yield Opt_Conv Opt_Select];
 
         %OTHER MODEL PARAMETERS
         C_H2O = 47.522423477254065 + 0.06931572301966918*T_K...
-           -0.00014440077466393135*T_K^2 %Water 
+           -0.00014440077466393135*T_K^2; %Water 
         %concentration as a function of temperature from 25 °C to 300 °C
         %[mol/L]
        

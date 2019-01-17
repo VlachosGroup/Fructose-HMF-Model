@@ -2,7 +2,9 @@ function FRU_PFR_Model
  
 %Code written by: Pierre Desir
 %Date: 06-13-16
- 
+
+% Plots of reactor performance at 11 temperatures are shown in this code
+
 %This MatLab Code solves the PFR model for the acid-catalyzed dehydration of
 %fructose to HMF using HCl as the catalyst and generates the kinetic data
 %for conversion, yield, and selectivity of the species as a function of
