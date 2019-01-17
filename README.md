@@ -1,5 +1,5 @@
 # Fructose-HMF-Model
-This MatLab Code solves the PFR model for the acid-catalyzed dehydration of
+This Code solves the PFR model for the acid-catalyzed dehydration of
 fructose to HMF using HCl as the catalyst and generates the kinetic data for 
 conversion, yield, and selectivity of the species as a function of temperature, 
 pH, and time. All the kinetic and thermodynamic parameters were taken from the 
