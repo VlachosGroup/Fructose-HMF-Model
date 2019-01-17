@@ -9,7 +9,7 @@ The model is offered in both MATLAB and Python 3.6.
 
 ## Developers
 - Pierre Desir (pdesir@udel.edu)
-- Yifan Wang (wangyf@udel.edu)
+- Yifan Wang (wangyf@udel.edu) - Python version
 
 ## Publications
 - Pierre Desir, Basudeb Saha, Dionisios G. Vlachos, “Ultrafast Flow Chemistry 
