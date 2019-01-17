@@ -1,4 +1,4 @@
-function Opt_Cond = FRU_PFR_Model_function(T_degC, pH)
+function [Tau, Opt_Cond] = FRU_PFR_Model_function(T_degC, pH)
 % Inputs
  
 % T - Rxn temperature [°C]
@@ -147,7 +147,7 @@ Opt_Cond = [T_degC Tau_opt Max_HMF_Yield Opt_Conv Opt_Select];
 
         %OTHER MODEL PARAMETERS
         C_H2O = 47.522423477254065 + 0.06931572301966918*T_K...
-           -0.00014440077466393135*T_K^2; %Water 
+           -0.00014440077466393135*T_K^2 %Water 
         %concentration as a function of temperature from 25 °C to 300 °C
         %[mol/L]
        

@@ -15,11 +15,10 @@
 import scipy.integrate as integrate
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.integrate import odeint
+from scipy.integrate import odeint, ode
 
 #%%------------------------------------------------------------------------
 # INPUT PARAMETERS: n_T, pH, Tmin_degC, Tmax_degC, tmin, tmax, Fru0
-n_T = 11 #Number of temperature points
 pH = 0.7 #Rxn pH
 Tmin_degC = 100  #Min rxn temperature [°C]
 Tmax_degC = 200  #Max rxn temperature [°C]
@@ -31,7 +30,7 @@ Fru0 = 1 #Normalized initial fructose concentration (always equal to 1)
 
 #-------------------------------------------------------------------------
 #%%
-def PFR(C, t, T, pH):
+def PFR(C, t, T_degC, pH):
     '''
     #The "PFR" function describes the species conservative equation as a
     #set of ODEs at T
@@ -41,9 +40,10 @@ def PFR(C, t, T, pH):
     Tm = 381 #Mean temperature of all Rxn [K]
     
     #OTHER MODEL PARAMETERS
+    T = T_degC + 273 # reaction temperarure in K
     C_Hplus = 10**(-pH) #H+ concentraction [mol/L]
-    C_H2O = 47.522423477254065 + 0.06931572301966918*T
-    - 0.00014440077466393135*T**2 #Water 
+    C_H2O = 47.522423477254065 + 0.06931572301966918*T - 0.00014440077466393135* (T**2) #Water 
+    print(C_H2O)
     #concentration as a function of temperature from 25 °C to 300 °C
     #[mol/L]
        
@@ -70,7 +70,7 @@ def PFR(C, t, T, pH):
     K_af = K_af303*np.exp(-(delH_af/R)*(1/T-1/303))
     
     #Furanose fraction at equilibirum as a function of temperature
-    phi_f = (K_af + K_bf/(1 + K_af + K_bf + K_ap + K_bp))
+    phi_f = (K_af + K_bf)/(1 + K_af + K_bf + K_ap + K_bp)
     
     # ACTIVATIONS ENERGIES FOR RXN1,RXN2,...,RXN5
     Ea = np.array([127, 133, 97, 64, 129]) * (10**3) #[J/mol]
@@ -106,17 +106,31 @@ def PFR(C, t, T, pH):
     return rhs
   
 #%% SOLVING FOR THE PFR MODEL at certain temperature T_K
-T_degC = 200
-T = T_degC + 273
+T_degC = 100
+
 #Initial Condition 
 C0 = np.array([Fru0, 0, 0, 0])
 
 # Time step has to be defined explicitly?
-Tau = np.linspace(t0, tf, 101)
+Tau = np.linspace(t0, tf, 10001)
 
 # Solve the odes
-Conc = odeint(PFR, C0, Tau, args=(T, pH))
+# Use odeint
+# Conc = odeint(PFR, C0, Tau, args=(T_degC, pH))
 
+#
+r = ode(PFR).set_integrator('zvode', method='bdf', rtol  = 1e-6, order=15)
+r.set_initial_value(C0, t0).set_f_params(*(T_degC, pH))
+dt = 0.01
+tv = []
+yv = []
+while r.successful() and r.t < tf:
+    r.integrate(r.t+dt)
+    tv.append(r.t)
+    yv.append(r.y)
+
+
+#%%
 #RESULTS
 Fru = np.around(Conc[:,0], decimals = 4) #Fructose normalized concentration 
 HMF = np.around(Conc[:,1], decimals = 4) #HMF normalized concentration 
