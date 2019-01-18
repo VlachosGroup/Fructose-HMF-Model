@@ -27,12 +27,25 @@ import numpy as np
 from scipy.integrate import odeint, ode
 
 #%%-------------------------------------------------------------------------
+# Define the variables and units
+Variable_list = ['T_degC', 'pH', 'tf']
+Units = ['C', '', 'min']
+var_with_unit = []
+for i, var in enumerate(Variable_list):
+    if not Units[i]  == '':
+        var = var + ' ('+ Units[i] + ')'
+    var_with_unit.append(var)
+
 #Reactor functions
-def Reactor(T_degC, pH, tf):
+def Reactor(**conditions):
     
     '''
     Reactor model under certain temperature, pH and residence time tf
+    Returns the final HMF yield
     '''
+    T_degC = conditions['T_degC (C)'] # reaction temperature in C
+    pH = conditions['pH'] # reaction pH
+    tf = conditions['tf (min)'] #Final time point [min]
     t0 = 0 #Initial time point [min]
     Fru0 = 1 #Normalized initial fructose concentration (always equal to 1)
 
@@ -46,7 +59,7 @@ def Reactor(T_degC, pH, tf):
         Tm = 381 #Mean temperature of all Rxn [K]
         
 
-        #OTHER MODEL PARAMETERS
+        #OTHER MODEL PARAMETER
         T = T_degC + 273 # reaction temperarure in K
         C_Hplus = 10**(-pH) #H+ concentraction [mol/L]
         C_H2O = 47.522423477254065 + 0.06931572301966918*T - 0.00014440077466393135* (T**2) #Water 
@@ -122,7 +135,7 @@ def Reactor(T_degC, pH, tf):
     solver = ode(PFR).set_integrator('dopri5', rtol  = 1e-6, method='bdf')
     solver.set_solout(solout)
     #feed in argumenrs and initial conditions for odes
-    solver.set_initial_value(C0, t0).set_f_params(*[T_degC,pH]) 
+    solver.set_initial_value(C0, t0).set_f_params(*(T_degC, pH)) 
     solver.integrate(tf)
     sol = np.array(sol)
     
@@ -139,6 +152,7 @@ def Reactor(T_degC, pH, tf):
     HMF_Select = 100*HMF_Yield/Conv #HMF selectivity [%]
     LA_Yield = 100*LA #LA yield [%]
     FA_Yield = 100*FA #FA yield [%]
+    HMF_Yield_final = HMF_Yield[-1]
      
     #OPTIMAL CONDITIONS FOR MAX HMF YIELD
     Max_HMF_Yield = max(HMF_Yield) #Maximum HMF Yield [%]
@@ -156,4 +170,4 @@ def Reactor(T_degC, pH, tf):
     #Temperature, optimal residence time, max HMF yield, conversion at max
     #HMF yield, HMF selectivity at max HMF yield
 
-    return Opt_Cond
+    return HMF_Yield_final

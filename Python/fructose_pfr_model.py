@@ -25,11 +25,14 @@ from scipy.integrate import odeint, ode
 t = time.time()
 #%%-------------------------------------------------------------------------
 #Reactor functions
-def Reactor(T_degC, pH, tf):
+def Reactor(**conditions):
     
     '''
     Reactor model under certain temperature, pH and residence time tf
     '''
+    T_degC = conditions['T_degC'] # reaction temperature in C
+    pH = conditions['pH'] # reaction pH
+    tf = conditions['tf'] #Final time point [min]
     t0 = 0 #Initial time point [min]
     Fru0 = 1 #Normalized initial fructose concentration (always equal to 1)
 
@@ -119,7 +122,7 @@ def Reactor(T_degC, pH, tf):
     solver = ode(PFR).set_integrator('dopri5', rtol  = 1e-6, method='bdf')
     solver.set_solout(solout)
     #feed in argumenrs and initial conditions for odes
-    solver.set_initial_value(C0, t0).set_f_params(*[T_degC,pH]) 
+    solver.set_initial_value(C0, t0).set_f_params(*(T_degC, pH)) 
     solver.integrate(tf)
     sol = np.array(sol)
     
@@ -153,6 +156,7 @@ def Reactor(T_degC, pH, tf):
     #Temperature, optimal residence time, max HMF yield, conversion at max
     #HMF yield, HMF selectivity at max HMF yield
 
+
     return Tau, Conv, HMF_Select, HMF_Yield, LA_Yield, FA_Yield, Opt_Cond
 
 
@@ -177,7 +181,8 @@ FA_Yield = []
 Opt_Cond = []
 
 for Ti in T_degC:
-    Tau_i, Conv_i, HMF_Select_i, HMF_Yield_i, LA_Yield_i, FA_Yield_i, Opt_Cond_i = Reactor(Ti, pH, tf)
+    Conditions = {'T_degC': Ti, 'pH': pH, 'tf' : tf}
+    Tau_i, Conv_i, HMF_Select_i, HMF_Yield_i, LA_Yield_i, FA_Yield_i, Opt_Cond_i = Reactor(**Conditions)
     Tau.append(Tau_i)
     Conv.append(Conv_i)
     HMF_Select.append(HMF_Select_i)
