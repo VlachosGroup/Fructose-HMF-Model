@@ -12,8 +12,7 @@ The model is offered in both MATLAB and Python 3.6.
 - Yifan Wang (wangyf@udel.edu) - Python version
 
 ## Publications
-- Pierre Desir, Basudeb Saha, Dionisios G. Vlachos, “Ultrafast Flow Chemistry 
-  for the Acid-Catalyzed Conversion of Fructose”. In Review, 2018.
+- Desir, P.; Saha, B.; Vlachos, D. G. Energy Environ. Sci. 2019.
 - Swift, T. D.; Bagia, C.; Choudhary, V.; Peklaris, G.; Nikolakis, V.; Vlachos, D. G. ACS Catal. 2014, 4 (1), 259–267.
 
 ## License
